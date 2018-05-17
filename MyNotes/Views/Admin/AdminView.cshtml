@@ -1,0 +1,95 @@
+﻿@model List<MyNotes.Models.ApplicationUser>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>List of all registered users</h2>
+
+@{
+    <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this user?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary js-delete" data-dismiss="modal">Yes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table id="users" class="table table-sm table-striped table-bordered table-hover">
+        <thead>
+            <tr>
+                <th class="col-sm-1" scope="col">User</th>
+                <th scope="col">Delete</th>
+            </tr>
+        </thead>
+        <tbody class="table-striped">
+            @foreach (var note in Model)
+            {
+                if (note.Email != "admin@admin.com")
+                {
+                    <tr>
+                        <td class="col-sm-1">@Html.ActionLink(note.Email, "Index", "Notes", new { user = note.Email }, new { @class = "nav-link" })</td>
+                        <td><a data-user-name="@note.Email" class="btn btn-danger js-button" style="color: white;" data-toggle="modal" data-target="#confirmationModal">Delete</a></td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            var table = $('#users').DataTable();
+
+            var item = '';
+            var item2;
+            var itemRef;
+
+            $('#users').on('click', '.js-button', function () {
+                item = '';
+                itemRef = $(this);
+                item2 = itemRef.attr('data-user-name');
+
+                for (var i = 0; i < item2.length; i++) {
+                    var c = item2.charAt(i);
+                    if (c === "@@") {
+                        for (var j = 0; j < i; j++) {
+                            item = item + item2[j];
+                        }
+                        item = item + '%40';
+                        for (var j = i + 1; j < item2.length; j++) {
+                            item = item + item2[j];
+                        }
+                        break;
+                    }
+                }
+            });
+
+            $('.js-delete').on('click', function () {
+                $.ajax({
+                    url: 'api/admin/?user=' + item,
+                    method: 'DELETE',
+                    success: function () {
+                        table.row(itemRef.parents('tr')).remove().draw();
+                        toastr.success("Deleted!");
+                    }
+                });
+            });
+        });
+    </script>
+}

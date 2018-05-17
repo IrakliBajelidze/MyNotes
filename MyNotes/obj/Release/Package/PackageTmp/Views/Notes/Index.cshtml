@@ -1,0 +1,103 @@
+﻿@model MyNotes.Models.NoteUserViewModel
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (!User.IsInRole("Admin"))
+{
+    <h2 style="margin-left: 15px;">Your notes</h2>
+}
+else
+{
+    if (Model.user == null)
+    {
+        <h2 style="margin-left: 15px;">Your notes</h2>
+    }
+    else
+    {
+        <h2 style="margin-left: 15px;">@Model.user's notes</h2>
+    }
+}
+
+@{
+
+    <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this note?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary js-delete" data-dismiss="modal">Yes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (!User.IsInRole("Admin"))
+        {
+            <a class="btn btn-success" style="margin-bottom: 10px; margin-left: 30px;" href="@Url.Action("New", "Notes")"><i class="fas fa-plus"></i> New</a>
+        }
+        else
+        {
+            <a class="btn btn-success" style="margin-bottom: 10px; margin-left: 15px;" href="@Url.Action("New", "Notes", new { user = Model.user } )"><i class="fas fa-plus"></i> New</a>
+        }
+    </div>
+
+    <table id="notes" class="table table-sm table-striped table-bordered table-hover box3">
+        <thead>
+            <tr>
+                <th class="col-sm-1" scope="col">Name</th>
+                <th scope="col">Number of characters</th>
+                <th scope="col">Delete</th>
+            </tr>
+        </thead>
+        <tbody class="table-striped">
+            @foreach (var note in Model.Notes)
+            {
+                <tr>
+                    <td class="col-sm-1">@Html.ActionLink(note.Name.Length == 0 ? "Unnamed" : note.Name, "Edit", "Notes", new { id = note.Id }, new { @class = "nav-link" })</td>
+                    <td>@Html.ActionLink(note.Content.Length.ToString(), "Edit", "Notes", new { id = note.Id }, new { @class = "nav-link" })</td>
+                    <td><a data-note-id="@note.Id" class="btn btn-danger js-button" style="color: white;" data-toggle="modal" data-target="#confirmationModal">Delete</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            var table = $('#notes').DataTable(); // main table with notes
+
+            // <delete button
+            var item;
+
+            $('#notes').on('click', '.js-button', function () {
+                item = $(this);
+            });
+
+            $('.js-delete').on('click', function () {
+                $.ajax({
+                    url: 'api/notes/' + item.attr('data-note-id'),
+                    method: 'DELETE',
+                    success: function () {
+                        table.row(item.parents('tr')).remove().draw();
+                        toastr.success("Deleted!");
+                    }
+                });
+            });
+            // delete button>
+        });
+    </script>
+}

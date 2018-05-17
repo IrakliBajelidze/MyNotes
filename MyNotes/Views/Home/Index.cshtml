@@ -1,0 +1,44 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron box2">
+    <h1>My Notes</h1>
+    <p class="lead">My Notes is easy to use notes management tool. Create, update, delete your notes and access them anytime!</p>
+    <p class="lead">Try it now!</p>
+</div>
+
+<div class="row">
+    <div class="col-md-4 box" style="box-shadow: 0 2px 18px rgba(0, 0, 0, 0.07);">
+        <h2 class="justify-content-center d-flex">Step 1</h2>
+        <p class="d-flex justify-content-center">
+            Create new account
+        </p>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div class="justify-content-center d-flex">
+                <button class="btn btn-primary " id="registerLink" disabled style="margin-bottom: 10px;">Register</button>
+            </div>
+        }
+        else
+        {
+            <div class="justify-content-center d-flex">
+                <button class="btn btn-primary " id="registerLink" style="margin-bottom: 10px;" onclick="location.href='@Url.Action("Register", "Account")'">Register</button>
+            </div>
+        }
+    </div>
+    <div class="col-md-4 box">
+        <h2 class="d-flex justify-content-center">Step 2</h2>
+        <p class="d-flex justify-content-center">Create your new note</p>
+        <div class="justify-content-center d-flex">
+            <button class="btn btn-primary" style="margin-bottom: 10px;" onclick="location.href='@Url.Action("New", "Notes")'">Create Note</button>
+        </div>
+    </div>
+    <div class="col-md-4 box">
+        <h2 class="d-flex justify-content-center">Step 3</h2>
+        <p class="d-flex justify-content-center">Done! You can access your note anytime</p>
+        <div class="justify-content-center d-flex">
+            <button class="btn btn-primary" style="margin-bottom: 10px;" onclick="location.href='@Url.Action("Index", "Notes")'">Check Notes</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,101 @@
+﻿@model MyNotes.Models.Notes
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    if (Model.Name == null)
+    {
+        if (!User.IsInRole("Admin"))
+        {
+            <h2>New</h2>
+        }
+        else
+        {
+            <h2>New @Model.Email's note</h2>
+        }
+    }
+    else
+    {
+        if (!User.IsInRole("Admin"))
+        {
+            <h2>Edit</h2>
+        }
+        else
+        {
+            <h2>Edit @Model.Email's note</h2>
+        }
+    }
+}
+
+
+<a class="btn btn-primary" href="@Url.Action("Index", "Notes", new { user = User.IsInRole("Admin") && User.Identity.Name == "admin@admin.com" ? Model.Email : null })"><i class="fas fa-chevron-left"></i> Back</a>
+
+<form class="mainform">
+    <div class="form-group">
+        @Html.LabelFor(m => m.Name)
+        @Html.TextBoxFor(m => m.Name, new { @class = "form-control name" })
+        @Html.ValidationMessageFor(m => m.Name)
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Content)
+        @Html.TextAreaFor(m => m.Content, new { @class = "form-control content", maxlength = "1024" })
+        @Html.ValidationMessageFor(m => m.Content)
+    </div>
+
+    @Html.Hidden("Id", Model.Id)
+    @Html.Hidden("Email", Model.Email)
+
+    <button class="btn btn-success js-save"><i class="fas fa-save"></i> Save</button>
+</form>
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+
+            $(".js-save").on("click", function () {
+                event.preventDefault(); // prevent form from submiting the default way
+
+                var requestType = "PUT";
+                var posted = false;
+
+                if (@Model.Id === 0 && posted === false) { // if new user is created do POST request
+                    requestType = "POST";
+                    posted === true;
+                }
+
+                $.ajax({ // does Ajax call to API
+                    method: requestType,
+                    data: JSON.stringify(getFormData($('.mainform'))),
+                    datatype: "json",
+                    contentType: "application/json; charset=utf-8",
+                    url: "/api/notes/",
+                    success: requestType === "PUT"
+                        ? function () {
+                            toastr.success("Saved!");
+                        }
+                        : function (data) {
+                            window.location.href = "/notes/edit/" + data;
+                        }
+                });
+            });
+        });
+
+        // returns proper JSON to map in api create/update methods
+        function getFormData($form) {
+            var unindexed_array = $form.serializeArray();
+            var indexed_array = {};
+
+            $.map(unindexed_array, function (n, i) {
+                indexed_array[n['name']] = n['value'];
+            });
+
+            return indexed_array;
+        }
+    </script>
+}
+
+
